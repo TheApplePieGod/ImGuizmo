@@ -2401,7 +2401,7 @@ namespace IMGUIZMO_NAMESPACE
      gContext.mAllowAxisFlip = value;
    }
 
-   bool Manipulate(const float* view, const float* projection, OPERATION operation, MODE mode, float* matrix, float* deltaMatrix, const float* snap, const float* localBounds, const float* boundsSnap)
+   bool Manipulate(const float* view, const float* projection, OPERATION operation, MODE mode, bool reverseDepth, float* matrix, float* deltaMatrix, const float* snap, const float* localBounds, const float* boundsSnap)
    {
       // Scale is always local or matrix will be skewed when applying world scale or oriented matrix
       ComputeContext(view, projection, matrix, (operation & SCALE) ? LOCAL : mode);
@@ -2415,7 +2415,8 @@ namespace IMGUIZMO_NAMESPACE
       // behind camera
       vec_t camSpacePosition;
       camSpacePosition.TransformPoint(makeVect(0.f, 0.f, 0.f), gContext.mModel * gContext.mViewMat);
-      if (!gContext.mIsOrthographic && camSpacePosition.z < 0.001f)
+      bool camVisible = (reverseDepth && camSpacePosition.z > 0.001f) || (!reverseDepth && camSpacePosition.z < 0.001f);
+      if (!gContext.mIsOrthographic && camVisible)
       {
          return false;
       }
